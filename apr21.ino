@@ -1,6 +1,9 @@
 #include <Servo.h>//imported
 #include <Adafruit_MotorShield.h> //imported
 #include <Encoder.h>
+#include <Wire.h>
+#include <Adafruit_RGBLCDShield.h>
+#include <utility/Adafruit_MCP23017.h>
 Servo servo;
 const int distLim = 25;
 const int SERVO = 9;
@@ -17,11 +20,22 @@ int ARRAYLEN = 20;
 int turning[20];// set 0 to turn left, 1 to right
 int timing[20];
 int marker = 0;
+Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+
+// These #defines make it easy to set the backlight color
+#define RED 0x1
+#define YELLOW 0x3
+#define GREEN 0x2
+#define TEAL 0x6
+#define BLUE 0x4
+#define VIOLET 0x5
+#define WHITE 0x7
 
 
 void(* resetFunc) (void) = 0;
 void setup() {
   Serial.begin(9600);
+  lcd.begin(16, 2);
   servo.attach(SERVO);
   if (!AFMS.begin()) {         // create with the default frequency 1.6KHz
     // if (!AFMS.begin(1000)) {  // OR with a different frequency, say 1KHz
@@ -37,6 +51,7 @@ void setup() {
     turning[i] = -99;
     timing[i] = -99;
   }
+  lcd.setBacklight(TEAL);
 }
 
 void turnRight() {
@@ -68,6 +83,7 @@ void move() {
   motor1->run(FORWARD);
   motor2->setSpeed(speed2 + 20);
   motor2->run(FORWARD);
+  lcd.setBacklight(GREEN);
 }
 void sensorLeft() {
   for (int pos = 0; pos <= 90; pos += 1) {
@@ -92,6 +108,7 @@ long getDist() {
   digitalWrite(pingPin, HIGH);
   delayMicroseconds(5);
   digitalWrite(pingPin, LOW);
+  lcd.setBacklight(YELLOW);
 
   // The same pin is used to read the signal from the PING))): a HIGH pulse
   // whose duration is the time (in microseconds) from the sending of the ping
@@ -155,6 +172,7 @@ void celebration() {
   }
 }
 void loop() {
+  lcd.setBacklight(RED);
   int movement = 0;
   distance = getDist();
   while (distance > distLim) {
